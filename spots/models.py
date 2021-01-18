@@ -14,7 +14,7 @@ class Spot(models.Model):
 
 
 class Artist(Spot):
-    genres = models.JSONField()
+    genres = models.JSONField(default=list)
 
 
 class Album(Spot):
@@ -28,7 +28,7 @@ class Album(Spot):
     ]
     album_type = models.CharField(max_length=11, choices=ALBUM_TYPE_CHOICES)
     artist = models.ForeignKey(to=Artist, on_delete=models.CASCADE)
-    genres = models.JSONField()
+    genres = models.JSONField(default=list)
     release_date = models.DateField(blank=True)
 
     def is_album(self):
