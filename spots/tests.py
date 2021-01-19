@@ -1,7 +1,9 @@
+from datetime import date, timedelta
 from faker import Faker
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
 from .models import Artist, Album, Track
 
@@ -9,84 +11,87 @@ fake = Faker()
 
 
 class ArtistModelTests(TestCase):
-    def test_creating_artist(self):
+    def test_create_artist(self):
         """
         Can create an artist.
         """
-        fake_name = fake.name()
-        fake_description = fake.text()
-        fake_spotify_id = "123456789"
-        fake_picture_url = fake.image_url()
+        name = fake.name()
+        description = fake.text()
+        spotify_id = "123456789"
+        picture_url = fake.image_url()
 
         artist = Artist(
-            name=fake_name,
-            description=fake_description,
-            spotify_id=fake_spotify_id,
-            picture_url=fake_picture_url
+            name=name,
+            description=description,
+            spotify_id=spotify_id,
+            picture_url=picture_url
         )
         artist.save()
 
         self.assertIsNotNone(artist)
         self.assertIsInstance(artist, Artist)
-        self.assertEquals(artist.name, fake_name)
-        self.assertEquals(artist.description, fake_description)
-        self.assertEquals(artist.spotify_id, fake_spotify_id)
-        self.assertEquals(artist.picture_url, fake_picture_url)
+        self.assertEquals(artist.name, name)
+        self.assertEquals(artist.description, description)
+        self.assertEquals(artist.spotify_id, spotify_id)
+        self.assertEquals(artist.picture_url, picture_url)
         self.assertIsNotNone(artist.likers)
         self.assertIsNotNone(artist.followers)
 
-    def test_user_likes_artist(self):
+
+class AlbumModelTests(TestCase):
+    def test_create_album(self):
         """
-        Can like an artist.
+        Can create an album.
         """
-        user = User(username=fake.first_name(), password=fake.password(8))
-        user.save()
-        artist = Artist(name=fake.name())
-        artist.save()
+        name = fake.name()
+        description = fake.text()
+        spotify_id = "123456789"
+        picture_url = fake.image_url()
+        album_type = Album.ALBUM
+        release_date = date.today()
 
-        artist.likers.add(user)
+        album = Album(
+            name=name,
+            description=description,
+            spotify_id=spotify_id,
+            picture_url=picture_url,
+            album_type=album_type,
+            release_date=release_date
+        )
+        album.save()
 
-        self.assertTrue(artist.likers.filter(pk=user.pk).exists())
-        self.assertEquals(artist.likers.get(id=user.pk), user)
+        self.assertIsNotNone(album)
+        self.assertIsInstance(album, Album)
+        self.assertEquals(album.name, name)
+        self.assertEquals(album.description, description)
+        self.assertEquals(album.spotify_id, spotify_id)
+        self.assertEquals(album.picture_url, picture_url)
+        self.assertEquals(album.album_type, album_type)
+        self.assertEquals(album.release_date, release_date)
 
-    def test_user_unlikes_artist(self):
+    def test_is_album(self):
         """
-        Can unlike an artist.
+        Should return true if the album is an album.
         """
-        user = User(username=fake.first_name(), password=fake.password(8))
-        user.save()
-        artist = Artist(name=fake.name())
-        artist.save()
-        artist.likers.add(user)
+        album = Album(name=fake.name(), album_type=Album.ALBUM)
+        album.save()
 
-        artist.likers.remove(user)
+        self.assertTrue(album.is_album())
 
-        self.assertFalse(artist.likers.filter(pk=user.pk).exists())
-
-    def test_user_follows_artist(self):
+    def test_is_single(self):
         """
-        Can follow an artist.
+        Should return true if the album is a single.
         """
-        user = User(username=fake.first_name(), password=fake.password(8))
-        user.save()
-        artist = Artist(name=fake.name())
-        artist.save()
+        album = Album(name=fake.name(), album_type=Album.SINGLE)
+        album.save()
 
-        artist.followers.add(user)
+        self.assertTrue(album.is_single())
 
-        self.assertTrue(artist.followers.filter(pk=user.pk).exists())
-        self.assertEquals(artist.followers.get(id=user.pk), user)
-
-    def test_user_unfollows_artist(self):
+    def test_is_compilation(self):
         """
-        Can unfollow an artist.
+        Should return true if the album is a compilation.
         """
-        user = User(username=fake.first_name(), password=fake.password(8))
-        user.save()
-        artist = Artist(name=fake.name())
-        artist.save()
-        artist.followers.add(user)
+        album = Album(name=fake.name(), album_type=Album.COMPILATION)
+        album.save()
 
-        artist.followers.remove(user)
-
-        self.assertFalse(artist.followers.filter(pk=user.pk).exists())
+        self.assertTrue(album.is_compilation())
