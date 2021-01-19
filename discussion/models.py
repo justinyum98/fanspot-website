@@ -8,7 +8,7 @@ class Discourse(models.Model):
         on_delete=models.CASCADE,
         related_name='+'
     )
-    likers = models.ManyToManyField(to=User, related_name='+', blank=True)
+    likers = models.ManyToManyField(to=User, related_name='+')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -18,7 +18,12 @@ class Discourse(models.Model):
 
 
 class Post(Discourse):
-    title = models.CharField(max_length=300)
+    title = models.CharField(
+        max_length=300,
+        error_messages={
+            'max_length': 'Title cannot exceed 300 characters.'
+        }
+    )
     ARTIST = "artist"
     ALBUM = "album"
     TRACK = "track"
@@ -27,7 +32,10 @@ class Post(Discourse):
         (ALBUM, "Album"),
         (TRACK, "Track")
     ]
-    spot_type = models.CharField(max_length=6, choices=SPOT_TYPE_CHOICES)
+    spot_type = models.CharField(
+        max_length=6,
+        choices=SPOT_TYPE_CHOICES
+    )
     artist = models.ForeignKey(
         to="spots.Artist",
         on_delete=models.CASCADE,
@@ -46,15 +54,15 @@ class Post(Discourse):
 
     def is_under_artist_spot(self) -> bool:
         """Returns true if the post is under an artist spot."""
-        return self.spot_type == ARTIST and not artist
+        return self.spot_type == self.ARTIST and not self.artist
 
     def is_under_album_spot(self) -> bool:
         """Returns true if the post is under an album spot."""
-        return self.spot_type == ALBUM and not album
+        return self.spot_type == self.ALBUM and not self.album
 
     def is_under_track_spot(self) -> bool:
         """Returns true if the post is under a track spot."""
-        return self.spot_type == TRACK and not track
+        return self.spot_type == self.TRACK and not self.track
 
 
 class Comment(Discourse):
