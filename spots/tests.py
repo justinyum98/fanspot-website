@@ -95,3 +95,43 @@ class AlbumModelTests(TestCase):
         album.save()
 
         self.assertTrue(album.is_compilation())
+
+
+class TrackModelTests(TestCase):
+    def test_create_track(self):
+        """
+        Can create an track.
+        """
+        name = fake.name()
+        description = fake.text()
+        spotify_id = "123456789"
+        picture_url = fake.image_url()
+        track_number = 1
+        duration_ms = 1
+
+        album = Album(name=fake.name(), album_type=Album.ALBUM)
+        album.save()
+        track = Track(
+            name=name,
+            description=description,
+            spotify_id=spotify_id,
+            picture_url=picture_url,
+            album=album,
+            track_number=track_number,
+            duration_ms=duration_ms
+        )
+        track.save()
+
+        self.assertIsNotNone(track)
+        self.assertIsInstance(track, Track)
+        self.assertEquals(track.name, name)
+        self.assertEquals(track.description, description)
+        self.assertEquals(track.spotify_id, spotify_id)
+        self.assertEquals(track.picture_url, picture_url)
+        self.assertEquals(track.album, album)
+        self.assertFalse(track.explicit)
+        self.assertEquals(track.disc_number, 1)
+        self.assertEquals(track.track_number, track_number)
+        self.assertEquals(track.duration_ms, duration_ms)
+        self.assertIsNotNone(track.likers)
+        self.assertIsNotNone(track.followers)
